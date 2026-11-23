@@ -64,6 +64,7 @@ flutter run
 ## Progres Mingguan
 
 1. Tugas 7: Setup proyek Flutter `myportofolio_mobile`, pemisahan struktur `main.dart` dan `menu.dart`, pembuatan *reusable widgets* (`InfoCard` dan `ItemCard`), kustomisasi tema warna *Space*, serta implementasi umpan balik interaktif menggunakan `SnackBar`.
+2. Tugas 8: Implementasi navigasi (`Navigator.push`, `pushReplacement`, `pop`), *Left Drawer*, *refactoring* direktori `screens/` dan `widgets/`, serta pembuatan halaman formulir baru `EducationFormPage` (`lib/screens/education_form.dart`) lengkap dengan `showDatePicker()`, validasi menyeluruh, dan `AlertDialog` ringkasan.
 
 ### Tugas 7
 
@@ -99,3 +100,35 @@ flutter run
 
 6. *Hot reload* adalah fitur di Flutter yang nyuntikkan perubahan kode sumber Dart yang baru disimpan langsung ke dalam Dart Virtual Machine (VM) yang lagi jalan, terus Flutter otomatis membangun ulang (*rebuild*) *widget tree* dalam hitungan milidetik **tanpa** menghapus *state* aplikasi yang lagi aktif. Bedanya sama *hot restart*, kalau *hot restart* itu ngulang eksekusi aplikasi dari awal lagi (mulai dari fungsi `main()` dan `initState()`), sehingga seluruh *state* yang tadinya tersimpan di memori bakal di-reset ke nilai awal, meskipun prosesnya tetap jauh lebih cepat daripada *full restart* karena ga perlu mengompilasi ulang kode native (Gradle/Xcode). Kita ga bisa cuma ngandalin *hot reload* dan harus melakukan *hot restart* kalau kita ngubah nilai inisialisasi variabel global/`static`, ngubah isi fungsi `main()` atau `initState()`, atau ngubah struktur kelas dari `StatelessWidget` jadi `StatefulWidget` (dan sebaliknya), serta waktu kita ngubah daftar `final List<ItemHomepage> items` yang diinisialisasi saat objek halaman pertama kali dibuat. Sedangkan *full restart* (stop lalu `flutter run` ulang) harus dilakukan kalau kita nambahin *dependency*/paket baru di `pubspec.yaml`, nambahin aset gambar/font baru, atau ngubah konfigurasi native di folder `android/`, `ios/`, atau `web/`.
 
+
+### Tugas 8
+
+1. Ketiga metode *Navigator* ini kerjanya di atas tumpukan (*stack*) halaman atau *route*:
+- `Navigator.push()` itu nambahin *route* baru di paling atas *stack* tanpa ngehapus halaman sebelumnya, jadi halaman lama tetep ada di bawahnya dan pengguna bisa balik pakai tombol *Back* bawaan perangkat atau browser.
+- `Navigator.pushReplacement()` itu ngegantiin *route* yang lagi tampil di puncak *stack* secara langsung sama *route* baru, jadi halaman sebelumnya dihapus dari puncak *stack* dan ga numpuk riwayat perpindahan yang berulang.
+- `Navigator.pop()` itu ngehapus *route* yang lagi aktif di puncak *stack* supaya aplikasi balik ke *route* yang ada tepat di bawahnya (atau buat nutup *pop-up* `AlertDialog`, karena dialog di Flutter juga dihitung sebagai *route*).
+
+Untuk membuka halaman formulir dari kartu aksi (`ItemCard` di `lib/widgets/project_card.dart`), aku pakai `Navigator.push()` baik untuk kartu **Tambah Proyek** maupun **Tambah Edukasi**, supaya setelah dibuka dari halaman utama, pengguna bisa langsung balik ke `MyHomePage` lewat tombol *Back* sistem. Sedangkan opsi **Home** di `LeftDrawer` (`lib/widgets/left_drawer.dart`) pakai `Navigator.pushReplacement()` menuju `MyHomePage()`, sehingga *route* halaman formulir yang lagi dibuka langsung diganti dengan halaman utama tanpa bikin *stack* menumpuk bolak-balik (misalnya `Home -> Form -> Home -> Form`).
+
+2. Susunan `Scaffold`, `AppBar`, dan `Drawer` ngebantu ngejaga konsistensi karena setiap halaman (`MyHomePage`, `ProjectFormPage`, dan `EducationFormPage`) pakai kerangka struktural yang sama persis: `Scaffold` nyediain tata letak standar Material, `AppBar` selalu ada di bagian atas dengan judul halaman dan ikon menu *hamburger* putih yang posisinya tetap, dan `drawer: const LeftDrawer()` ngebawa komponen navigasi samping yang identik di semua halaman. Jadi di halaman mana pun pengguna berada, cara buka menu navigasinya selalu sama. Salah satu contoh penggunaan warna tema portofolio di lebih dari satu halaman adalah `Theme.of(context).colorScheme.primary` (warna *Cosmic Midnight Navy* `0xFF0F172A` yang didefinisikan sekali di `lib/main.dart`): warna ini aku pakai ulang untuk `backgroundColor` pada `AppBar` di `MyHomePage`, `ProjectFormPage`, dan `EducationFormPage`, untuk `BoxDecoration` di `DrawerHeader` pada `LeftDrawer`, sekaligus untuk warna latar tombol **Simpan** / **Save** di kedua halaman formulir.
+
+3. Untuk formulir di `EducationFormPage` (`lib/screens/education_form.dart`), aku pakai susunan `Form` -> `SingleChildScrollView` -> `Column` dengan `crossAxisAlignment: CrossAxisAlignment.start`, karena input formulir secara alami paling enak diisi berurutan dari atas ke bawah dalam satu kolom vertikal. Peran *widget* pengatur jarak seperti `Padding` (`EdgeInsets.all(16.0)` di sekeliling form dan `EdgeInsets.symmetric(vertical: 8.0)` di setiap field) serta `SizedBox(height: 16.0)` sebelum tombol **Simpan** adalah ngasih ruang bernapas antar-komponen supaya label, *border*, dan pesan *error* validasi ga saling dempet dan tombol tetap nyaman ditekan. Sementara peran *widget* penggulir `SingleChildScrollView` itu krusial banget waktu layar sempit (ukuran ponsel) atau pas *keyboard* virtual muncul dari bawah: karena `Column` secara bawaan ga bisa di-*scroll* dan bakal kena *render overflow* kalau tingginya melebihi sisa layar, `SingleChildScrollView` bikin seluruh field dan tombol **Simpan** tetap bisa digulir dan dijangkau dengan lancar tanpa terpotong.
+
+4. Saat tombol **Simpan** ditekan, alur validasinya melibatkan tiga hal itu:
+- `GlobalKey<FormState>` (`_formKey`) bertindak sebagai pengenal unik yang dipasang di `Form(key: _formKey)` supaya kode di luar *widget* `Form` (yaitu di `onPressed` tombol **Simpan**) bisa ngakses `FormState` yang sedang aktif lewat `_formKey.currentState`.
+- `validator` adalah fungsi *callback* yang dipasang di masing-masing *form field* (`TextFormField`) buat ngecek apakah nilai input memenuhi aturan model (kalau melanggar, ngembaliin teks pesan *error*; kalau lolos, ngembaliin `null`).
+- `validate()` (`_formKey.currentState!.validate()`) bakal manggil semua `validator` di dalam `Form` tersebut sekaligus; kalau ada satu aja yang ngembaliin pesan *error*, pesan itu langsung ditampilin di bawah kolom terkait dan `validate()` ngembaliin `false` sehingga `AlertDialog` ga bakal muncul.
+
+Contoh nilai yang ditolak oleh validasi di `EducationFormPage`:
+- Input hanya berisi spasi (`"   "`) pada **Nama Institusi** atau **Jurusan**, ditolak karena kita cek `value.trim().isEmpty`.
+- **IPK** bernilai `"5.5"` atau `"abc"`, ditolak karena harus berupa angka desimal valid di rentang `0.00` sampai `4.00`.
+- **Tanggal Selesai** yang lebih awal dari **Tanggal Mulai**, ditolak oleh pengecekan `_endDate!.isBefore(_startDate!)`.
+- **Tautan Institusi** seperti `"ui.ac.id"` tanpa skema `http://` atau `https://`, ditolak oleh `Uri.tryParse`.
+
+Memilih jenis input atau `keyboardType` (seperti `TextInputType.numberWithOptions(decimal: true)` atau `TextInputType.url`) aja belum cukup karena `keyboardType` cuma sekadar saran tampilan papan ketik ke OS—pengguna tetap bisa menempel (*paste*) teks sembarangan, mengetik di keyboard fisik (misalnya pas dijalankan di web/Chrome), mengosongkan input, atau memasukkan angka di luar rentang logis (kayak IPK `99.9` atau `-1`). Jadi validasi eksplisit lewat `validator` tetap wajib ada buat menjamin integritas data.
+
+## Keterangan Penggunaan AI (AI Disclosure)
+
+- **Bagian yang dibantu AI**: Merapikan struktur impor `material_ui`, menyusun kerangka awal `EducationFormPage`.
+- **Strategi prompting**: aku memberikan file spesifikasi tugas/tutorial dan memverifikasi langsung konteks proyek yang sedang aktif (`lib/main.dart`, `lib/screens/`, `lib/widgets/`) agar kode yang dihasilkan tetap konsisten dengan tema warna *Space* dan struktur proyek yang sudah ada.
+- **Evaluasi & perbaikan manual**: aku meninjau ulang hasil kode dari AI, memastikan pengujian manual berjalan di Chrome, lalu memperbaiki bagian yang dirasa tidak sesuai dengan kesesuaian pada bagian lain yang dikejrakan manual.
