@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 
@@ -10,11 +11,11 @@ class LeftDrawer extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.indigo,
+              color: Theme.of(context).colorScheme.primary,
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -28,10 +29,7 @@ class LeftDrawer extends StatelessWidget {
                 SizedBox(height: 10),
                 Text(
                   'Explore personal projects and experiences!',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.white),
                 ),
               ],
             ),
@@ -43,9 +41,7 @@ class LeftDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MyHomePage(),
-                ),
+                MaterialPageRoute(builder: (context) => MyHomePage()),
               );
             },
           ),
@@ -58,6 +54,19 @@ class LeftDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProjectFormPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.school_outlined),
+            title: const Text('Add Education'),
+            // Navigasi ke halaman tambah edukasi
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EducationFormPage(),
                 ),
               );
             },
