@@ -10,11 +10,31 @@ class MyHomePage extends StatelessWidget {
   final String kelas = "PBP F";
 
   final List<ItemHomepage> items = [
-    ItemHomepage("Lihat Proyek", Icons.folder, const Color(0xFF1E3A8A)), // Cosmic Deep Blue
-    ItemHomepage("Tambah Proyek", Icons.add_circle, const Color(0xFF5B21B6)), // Nebula Purple
-    ItemHomepage("Lihat Education", Icons.school, const Color(0xFF0F766E)), // Galactic Teal
-    ItemHomepage("Tambah Edukasi", Icons.add_box, const Color(0xFF0369A1)), // Cosmic Sky Blue
-    ItemHomepage("Logout", Icons.logout, const Color(0xFF9F1239)), // Supernova Crimson
+    ItemHomepage(
+      "Lihat Proyek",
+      Icons.folder,
+      const Color(0xFF1E3A8A),
+    ), // Cosmic Deep Blue
+    ItemHomepage(
+      "Tambah Proyek",
+      Icons.add_circle,
+      const Color(0xFF5B21B6),
+    ), // Nebula Purple
+    ItemHomepage(
+      "Lihat Education",
+      Icons.school,
+      const Color(0xFF0F766E),
+    ), // Galactic Teal
+    ItemHomepage(
+      "Tambah Edukasi",
+      Icons.add_box,
+      const Color(0xFF0369A1),
+    ), // Cosmic Sky Blue
+    ItemHomepage(
+      "Logout",
+      Icons.logout,
+      const Color(0xFF9F1239),
+    ), // Supernova Crimson
   ];
 
   @override
@@ -25,10 +45,7 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'MyPortfolio',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Colors.white),
